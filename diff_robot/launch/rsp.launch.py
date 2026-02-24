@@ -5,24 +5,24 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+import xacro
 
 def generate_launch_description():
 
     ##use_sim_time = LaunchConfiguration('use_sim_time', default='false')
 
-    urdf_file_name = 'robot.urdf'
+    urdf_file_name = 'robot.urdf.xacro'
     package_name = "diff_robot"
     
     urdf = os.path.join(get_package_share_directory(package_name),"urdf",urdf_file_name)
-    
+    xacro_file = xacro.process_file(urdf)
 
     urdf_content = open(urdf).read()
-
     robot_state_publisher_node = Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
             name='robot_state_publisher',
-            parameters=[{'use_sim_time': True, 'robot_description':  urdf_content }],
+            parameters=[{'use_sim_time': True, 'robot_description':  xacro_file.toxml()}],
             output='screen'
 
     )

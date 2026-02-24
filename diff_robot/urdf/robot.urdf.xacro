@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="https://www.ros.org/wiki/xacro" name="diff_robot">
+    <xacro:include filename="inertial_macros.xacro"/>
+    <xacro:include filename="chassis.xacro"/>
+    <link name="base_link"/>
+
+</robot>
