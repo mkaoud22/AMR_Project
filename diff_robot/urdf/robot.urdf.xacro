@@ -1,7 +1,14 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="https://www.ros.org/wiki/xacro" name="diff_robot">
     <xacro:include filename="inertial_macros.xacro"/>
+    <xacro:include filename="properties.xacro"/>
     <xacro:include filename="chassis.xacro"/>
+    <xacro:include filename="wheels.xacro"/>
+    <xacro:include filename="caster_wheel.xacro"/>
+    <xacro:include filename="lidar.xacro"/>
+    <xacro:include filename="imu.xacro"/>
+    <xacro:include filename="gazebo_control.xacro"/>
+
     <link name="base_link"/>
 
-</robot>
+</robot>         
