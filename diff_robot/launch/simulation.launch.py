@@ -37,12 +37,23 @@ def generate_launch_description():
         launch_arguments=[('world', world_path)]
         )
     
+    
+    rviz_config_file = os.path.join(get_package_share_directory(pkg_name), "rviz", "show_robot.rviz")
+    use_rviz = LaunchConfiguration("rviz", default=False)
+    rviz = Node(
+        package="rviz2",
+        executable="rviz2",
+        arguments=["-d", rviz_config_file],
+        output="screen",
+        condition=IfCondition(use_rviz)
+        )
+    
  
     return LaunchDescription([
         rsp,
         gazebo,
         spawn_entity,
-  
+        rviz,
     ])
     
     

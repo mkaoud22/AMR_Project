@@ -11,4 +11,11 @@
 
     <link name="base_link"/>
 
+    <link name="base_footprint"/>
+    <joint name="base_footprint_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="base_footprint"/>
+    </joint>
+    
+
 </robot>         

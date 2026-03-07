@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(diff_robot)
+project(robot_navigation)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -23,13 +23,10 @@ endif()
 
 install(
   DIRECTORY
-  urdf
   launch
-  worlds
+  config
   rviz
   DESTINATION
   share/${PROJECT_NAME}
 )
-
-
 ament_package()

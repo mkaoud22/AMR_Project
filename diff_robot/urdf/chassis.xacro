@@ -8,7 +8,7 @@
         <visual>
             <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
             <geometry>
-                <cylinder radius="0.210" length="0.15"/>
+                <cylinder radius="${chassis_radius}" length="${chassis_height}"/>
             </geometry>
             <material name="white"/>
         </visual>
@@ -16,11 +16,11 @@
         <collision>
             <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
             <geometry>
-                <cylinder radius="0.210" length="0.15"/>
+                <cylinder radius="${chassis_radius}" length="${chassis_height}"/>
             </geometry>
         </collision>
 
-        <xacro:inertial_cylinder mass="4" length="0.15" radius="0.210">
+        <xacro:inertial_cylinder mass="4" length="${chassis_height}" radius="${chassis_radius}">
             <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
         </xacro:inertial_cylinder>
     </link>
@@ -30,8 +30,11 @@
         <parent link="base_link"/>
         <child link="chassis_link"/>
         <origin xyz="0.03 0.0 0.0575" rpy="0.0 0.0 0.0"/>
+    <!--In a URDF joint, the <origin> tag defines the pose of the child link relative to 
+    the parent link's coordinate frame. so move from parent to the child-->
     </joint>
-
+ 
+    
     <gazebo reference="chassis_link">
         <material> Gazebo/White</material>
     </gazebo>
