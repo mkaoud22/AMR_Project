@@ -1,0 +1,18 @@
+bt_navigator:
+  ros__parameters:
+    use_sim_time: True
+    global_frame: map
+    robot_base_frame: base_footprint
+    odom_topic: /odom
+    # In Humble, Groot monitoring is often handled differently or 
+    # uses these new keys for Groot 2 compatibility:
+    enable_groot_monitoring: True
+    groot_zmq_publisher_port: 1666
+    groot_zmq_server_port: 1667
+    default_bt_xml_filename: "/home/gproject_ws/src/robot_navigation/config/behavior.xml"
+    
+    # NOTICE: We removed the long list of plugin_lib_names. 
+    # Humble loads standard Nav2 nodes automatically.
+    # If you have CUSTOM plugins, you would use:
+    # bt_loop_duration: 10
+    # default_server_timeout: 20
