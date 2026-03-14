@@ -8,7 +8,7 @@ import xacro
 
 def generate_launch_description():
 
-    ##use_sim_time = LaunchConfiguration('use_sim_time', default='false')
+    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
 
     urdf_file_name = 'robot.urdf.xacro'
     package_name = "diff_robot"

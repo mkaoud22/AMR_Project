@@ -25,7 +25,7 @@ def generate_launch_description():
         executable="amcl",
         output="screen",
         name="amcl",
-        parameters=[os.path.join(config_dir, localization_config_file)],
+        parameters=[os.path.join(config_dir, localization_config_file),{'use_sim_time': True}],
 
     )
 

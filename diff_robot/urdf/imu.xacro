@@ -10,7 +10,7 @@
       <geometry>
           <box size="0.01556012 0.02026185 0.00254"/>
       </geometry> 
-      <material name="Red"/>
+      <material name="red"/>
      </visual>
   </link>
 
@@ -23,8 +23,8 @@
   </joint>
 
 
-<!--IMU_Plugin-->
-  <gazebo reference="imu_frame">
+<!-- IMU_Plugin -->
+  <!-- <gazebo reference="imu_frame">
     <gravity>true</gravity>
     <sensor name="imu_sensor" type="imu">
       <always_on>true</always_on>
@@ -43,8 +43,22 @@
       </plugin>
       <pose>0 0 0 0 0 0</pose>
     </sensor>
-  </gazebo>
+  </gazebo> -->
 
+  <gazebo reference="imu_frame">
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <visualize>true</visualize>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <ros>
+          <remapping>~/out:=imu</remapping>
+        </ros>
+        <initial_orientation_as_reference>false</initial_orientation_as_reference>
+      </plugin>
+    </sensor>
+  </gazebo>
 
   <gazebo reference="imu_frame">
     <material>

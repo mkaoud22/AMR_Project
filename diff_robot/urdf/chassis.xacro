@@ -10,7 +10,7 @@
             <geometry>
                 <cylinder radius="${chassis_radius}" length="${chassis_height}"/>
             </geometry>
-            <material name="white"/>
+            <material name="green"/>
         </visual>
 
         <collision>
@@ -30,15 +30,15 @@
         <parent link="base_link"/>
         <child link="chassis_link"/>
         <origin xyz="0.03 0.0 0.0575" rpy="0.0 0.0 0.0"/>
-    <!--In a URDF joint, the <origin> tag defines the pose of the child link relative to 
+        <!--In a URDF joint, the <origin> tag defines the pose of the child link relative to 
     the parent link's coordinate frame. so move from parent to the child-->
     </joint>
- 
-    
+
+
     <gazebo reference="chassis_link">
-        <material> Gazebo/White</material>
+        <material> Gazebo/Green</material>
     </gazebo>
-    
+
 
 
 </robot>
