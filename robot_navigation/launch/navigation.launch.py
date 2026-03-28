@@ -21,7 +21,7 @@ def generate_launch_description():
     bt_navigator_yaml = os.path.join(get_package_share_directory(package_name), 'config', 'bt_navigator.yaml')
     recovery_yaml = os.path.join(get_package_share_directory(package_name), 'config', 'recovery.yaml')
     ekf_yaml = os.path.join(get_package_share_directory(package_name), 'config', 'ekf_sensor_fusion.yaml')
-    
+
     use_rviz = LaunchConfiguration("rviz", default=True)
     
     # Define sim time parameter to easily pass to all nodes
@@ -92,7 +92,14 @@ def generate_launch_description():
         output='screen',
         parameters=[ekf_yaml, sim_time]
         ),
-        
+
+        Node(
+            package='robot_navigation',
+            executable='coverage_planner.py',
+            name='coverage_planner',
+            output='screen',
+            parameters=[sim_time] 
+        ),
         Node(
             package= "rviz2",
             executable= "rviz2",

@@ -29,4 +29,11 @@ install(
   DESTINATION
   share/${PROJECT_NAME}
 )
+
+# Install Python scripts
+install(PROGRAMS
+  scripts/coverage_planner.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_package()
