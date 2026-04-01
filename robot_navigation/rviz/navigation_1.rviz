@@ -277,7 +277,7 @@ Visualization Manager:
       Axes Radius: 0.10000000149011612
       Class: rviz_default_plugins/Pose
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Pose
@@ -291,7 +291,7 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /goal_pose
-      Value: true
+      Value: false
     - Acceleration properties:
         Acc. vector alpha: 1
         Acc. vector color: 255; 0; 0
@@ -402,7 +402,7 @@ Visualization Manager:
       Enabled: true
       Name: Marker
       Namespaces:
-        cleaning_zone: true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Transient Local
