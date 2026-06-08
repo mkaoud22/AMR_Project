@@ -29,7 +29,7 @@
     <joint name="chassis_joint" type="fixed">
         <parent link="base_link"/>
         <child link="chassis_link"/>
-        <origin xyz="0.03 0.0 0.0575" rpy="0.0 0.0 0.0"/>
+        <origin xyz="0.04124 0.0 0.0525" rpy="0.0 0.0 0.0"/>
         <!--In a URDF joint, the <origin> tag defines the pose of the child link relative to 
     the parent link's coordinate frame. so move from parent to the child-->
     </joint>
