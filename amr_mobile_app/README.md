@@ -23,8 +23,9 @@ The **AMR Control Dashboard** is a Progressive Web App (PWA) built using React, 
   - Displays the 2D static occupancy grid map.
   - Dynamically overlays the live global costmap using custom transparency (alpha blending).
   - Toggles between **Static Map**, **Costmap**, or **Overlay (Both)** modes dynamically.
-- **Drag-to-Draw Area Selector**:
-  - Intuitive pointer-down and pointer-drag handlers to sketch a rectangular polygon zone directly on the map.
+- **Dual-Mode Drag-to-Draw Area Selector**:
+  - Toggle between **Draw Coverage** and **Draw No-Go** modes via a segmented toggle controller.
+  - Touchscreen and mouse drag handlers let you sketch zones in green (coverage) and red (no-go) simultaneously.
   - Converts screen-pixel coordinates to exact physical ROS coordinates in real-time.
 - **Dynamic Connection & Tunneling**:
   - Connects using either local IP/hostname (automatically defaults to WebSocket port `9090`) or external tunneling/tunneling proxies (such as ngrok or localtunnel).
@@ -56,7 +57,7 @@ graph TD
     UI -->|Coordinates & Commands| ROS_JS
     ROS_JS <==>|Websocket Connection| WS
     WS <==>|ROS 2 Topics| NAV
-    WS <==>|/coverage_polygon| PLANNER
+    WS <==>|/coverage_polygon & /nogo_zone| PLANNER
     POSE_PUB ===>|/robot_pose| WS
     WS ===>|/robot_pose| MAP_COMP
 ```
@@ -109,7 +110,25 @@ The PWA communicates with the robot using standard JSON messages over a WebSocke
   }
   ```
 
-#### 2. `/stop_and_dock`
+#### 2. `/nogo_zone`
+- **Type**: `geometry_msgs/msg/PolygonStamped`
+- **Description**: Triggered when the user taps "Send No-Go". Transmits the 4 corner points of the selected restricted zone boundary to the planner.
+- **Payload Structure**:
+  ```json
+  {
+    "header": { "frame_id": "map" },
+    "polygon": {
+      "points": [
+        { "x": 2.10, "y": -1.20, "z": 0.0 },
+        { "x": 3.40, "y": -1.20, "z": 0.0 },
+        { "x": 3.40, "y": -2.30, "z": 0.0 },
+        { "x": 2.10, "y": -2.30, "z": 0.0 }
+      ]
+    }
+  }
+  ```
+
+#### 3. `/stop_and_dock`
 - **Type**: `std_msgs/msg/Empty`
 - **Description**: Triggered by tapping "Stop & Return to Dock". Instructs the robot to abort the current path-following task and navigate to its charging dock.
 
