@@ -402,7 +402,9 @@ Visualization Manager:
       Enabled: true
       Name: Marker
       Namespaces:
-        {}
+        cleaning_zone: true
+        coverage_path: true
+        nogo_zone: true
       Topic:
         Depth: 5
         Durability Policy: Transient Local
@@ -455,7 +457,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 8.826821327209473
+      Distance: 9.886039733886719
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -491,5 +493,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1033
-  X: -387
-  Y: 85
+  X: -379
+  Y: 129

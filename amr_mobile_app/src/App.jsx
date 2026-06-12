@@ -3,7 +3,8 @@ import {
   BatteryMedium, 
   Play, 
   Square,
-  Crosshair
+  Crosshair,
+  ShieldAlert
 } from 'lucide-react';
 import rosConnection from './ros';
 import MapComponent from './MapComponent';
@@ -13,7 +14,9 @@ function App() {
   const [status, setStatus] = useState('Idle');
   const [battery, setBattery] = useState(85);
   const [ip, setIp] = useState(window.location.hostname || 'localhost');
-  const [polygonPoints, setPolygonPoints] = useState([]);
+  const [activeMode, setActiveMode] = useState('coverage'); // 'coverage' or 'nogo'
+  const [coveragePoints, setCoveragePoints] = useState([]);
+  const [nogoPoints, setNogoPoints] = useState([]);
 
   useEffect(() => {
     // Subscribe to ROS connection status
@@ -52,15 +55,35 @@ function App() {
       return;
     }
     
-    if (polygonPoints.length < 3) {
-      alert("Please tap at least 3 points on the map to draw a coverage zone.");
+    if (coveragePoints.length < 3) {
+      alert("Please drag on the map to draw a coverage zone first.");
       return;
     }
 
     setStatus('Sending Path...');
-    const rosPoints = polygonPoints.map(p => p.ros);
+    const rosPoints = coveragePoints.map(p => p.ros);
     rosConnection.sendCoveragePolygon(rosPoints);
     setTimeout(() => setStatus('Cleaning'), 1000);
+  };
+
+  const handleSendNoGoZone = () => {
+    if (!connected) {
+      alert("Please connect to the robot first.");
+      return;
+    }
+    
+    if (nogoPoints.length < 3) {
+      alert("Please drag on the map to draw a no-go zone first.");
+      return;
+    }
+
+    setStatus('Sending No-Go Zone...');
+    const rosPoints = nogoPoints.map(p => p.ros);
+    rosConnection.sendNoGoZone(rosPoints);
+    setTimeout(() => {
+      setStatus('No-Go Zone Set');
+      setTimeout(() => setStatus('Ready'), 2000);
+    }, 1000);
   };
 
   const handleStop = () => {
@@ -98,9 +121,33 @@ function App() {
       )}
 
       <div className="card">
-        <div className="card-title">Live Map</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="card-title">Live Map</div>
+          {connected && (
+            <div className="draw-mode-toggle">
+              <button 
+                className={`toggle-btn ${activeMode === 'coverage' ? 'active-coverage' : ''}`}
+                onClick={() => setActiveMode('coverage')}
+              >
+                Draw Coverage
+              </button>
+              <button 
+                className={`toggle-btn ${activeMode === 'nogo' ? 'active-nogo' : ''}`}
+                onClick={() => setActiveMode('nogo')}
+              >
+                Draw No-Go
+              </button>
+            </div>
+          )}
+        </div>
         {connected ? (
-          <MapComponent onPolygonChange={setPolygonPoints} />
+          <MapComponent 
+            activeMode={activeMode}
+            coveragePoints={coveragePoints}
+            onCoverageChange={setCoveragePoints}
+            nogoPoints={nogoPoints}
+            onNoGoChange={setNogoPoints}
+          />
         ) : (
           <div className="map-placeholder" style={{ padding: '20px' }}>
             <span style={{opacity: 0.5}}>Connect to view map</span>
@@ -130,10 +177,26 @@ function App() {
       </div>
 
       <div className="controls">
-        <button className="primary" onClick={handleStartCoverage} disabled={!connected || polygonPoints.length < 3} style={{ opacity: connected && polygonPoints.length >= 3 ? 1 : 0.5 }}>
-          <Play size={20} />
-          Start Coverage Area
-        </button>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <button 
+            className="primary" 
+            onClick={handleStartCoverage} 
+            disabled={!connected || coveragePoints.length < 3} 
+            style={{ opacity: connected && coveragePoints.length >= 3 ? 1 : 0.5 }}
+          >
+            <Play size={20} />
+            Start Coverage
+          </button>
+          <button 
+            className="warning-nogo" 
+            onClick={handleSendNoGoZone} 
+            disabled={!connected || nogoPoints.length < 3} 
+            style={{ opacity: connected && nogoPoints.length >= 3 ? 1 : 0.5 }}
+          >
+            <ShieldAlert size={20} />
+            Send No-Go
+          </button>
+        </div>
         <button className="danger" onClick={handleStop} disabled={!connected} style={{ opacity: connected ? 1 : 0.5 }}>
           <Square size={20} />
           Stop & Return to Dock

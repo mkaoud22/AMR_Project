@@ -2,12 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import rosConnection from './ros';
 
-function MapComponent({ onPolygonChange }) {
+function MapComponent({ 
+  activeMode, 
+  coveragePoints, 
+  onCoverageChange, 
+  nogoPoints, 
+  onNoGoChange 
+}) {
   const mapContainerRef = useRef(null);
   const [viewer, setViewer] = useState(null);
-  const [points, setPoints] = useState([]);
   const [robotPose, setRobotPose] = useState(null);
   const polygonMarkerRef = useRef(null);
+  const nogoMarkerRef = useRef(null);
   const robotMarkerRef = useRef(null);
   const viewerRef = useRef(null);
   const gridClientRef = useRef(null);
@@ -102,6 +108,9 @@ function MapComponent({ onPolygonChange }) {
       if (tfClientRef.current) {
         tfClientRef.current.unsubscribe();
       }
+      polygonMarkerRef.current = null;
+      nogoMarkerRef.current = null;
+      robotMarkerRef.current = null;
     };
   }, []);
 
@@ -153,7 +162,12 @@ function MapComponent({ onPolygonChange }) {
     dragStartRef.current = coord;
     
     // Start with a zero-area rectangle at the click point
-    setPoints([coord, coord, coord, coord]);
+    const initialPoints = [coord, coord, coord, coord];
+    if (activeMode === 'coverage') {
+      onCoverageChange(initialPoints);
+    } else {
+      onNoGoChange(initialPoints);
+    }
   };
 
   const handlePointerMove = (e) => {
@@ -170,7 +184,12 @@ function MapComponent({ onPolygonChange }) {
     const p4 = calculateCoordinate(start.clientX, current.clientY);
 
     if (p1 && p2 && p3 && p4) {
-      setPoints([p1, p2, p3, p4]);
+      const updatedPoints = [p1, p2, p3, p4];
+      if (activeMode === 'coverage') {
+        onCoverageChange(updatedPoints);
+      } else {
+        onNoGoChange(updatedPoints);
+      }
     }
   };
 
@@ -180,12 +199,6 @@ function MapComponent({ onPolygonChange }) {
       dragStartRef.current = null;
     }
   };
-
-  // Notify parent and redraw when points change
-  useEffect(() => {
-    onPolygonChange(points);
-    drawPolygon(points);
-  }, [points]);
 
   useEffect(() => {
     if (robotPose) {
@@ -242,20 +255,20 @@ function MapComponent({ onPolygonChange }) {
     }
   };
 
-  const drawPolygon = (pts) => {
+  const drawPolygon = (pts, strokeColor, fillColor, markerRef) => {
     if (!viewerRef.current || !window.createjs) return;
     const scene = viewerRef.current.scene;
 
-    if (polygonMarkerRef.current) {
-      scene.removeChild(polygonMarkerRef.current);
+    if (markerRef.current) {
+      scene.removeChild(markerRef.current);
     }
 
     if (pts.length === 0) return;
 
     const graphics = new window.createjs.Graphics();
     graphics.setStrokeStyle(0.1); 
-    graphics.beginStroke("#10b981");
-    graphics.beginFill("rgba(16, 185, 129, 0.3)");
+    graphics.beginStroke(strokeColor);
+    graphics.beginFill(fillColor);
     
     graphics.moveTo(pts[0].visual.x, pts[0].visual.y);
     for (let i = 1; i < pts.length; i++) {
@@ -267,9 +280,19 @@ function MapComponent({ onPolygonChange }) {
     }
     
     const shape = new window.createjs.Shape(graphics);
-    polygonMarkerRef.current = shape;
+    markerRef.current = shape;
     scene.addChild(shape);
   };
+
+  // Redraw when coveragePoints change
+  useEffect(() => {
+    drawPolygon(coveragePoints, "#10b981", "rgba(16, 185, 129, 0.3)", polygonMarkerRef);
+  }, [coveragePoints]);
+
+  // Redraw when nogoPoints change
+  useEffect(() => {
+    drawPolygon(nogoPoints, "#ef4444", "rgba(239, 68, 68, 0.3)", nogoMarkerRef);
+  }, [nogoPoints]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', position: 'relative' }}>
@@ -326,11 +349,14 @@ function MapComponent({ onPolygonChange }) {
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: '14px', color: '#94a3b8' }}>
-          {points.length === 0 ? "Drag on map to draw coverage area" : `Area Selected`}
+          {activeMode === 'coverage' 
+            ? (coveragePoints.length === 0 ? "Drag on map to draw coverage area" : "Coverage Area Selected")
+            : (nogoPoints.length === 0 ? "Drag on map to draw no-go zone" : "No-Go Zone Selected")
+          }
         </span>
-        {points.length > 0 && (
+        {((activeMode === 'coverage' && coveragePoints.length > 0) || (activeMode === 'nogo' && nogoPoints.length > 0)) && (
           <button 
-            onClick={() => setPoints([])}
+            onClick={() => activeMode === 'coverage' ? onCoverageChange([]) : onNoGoChange([])}
             style={{ 
               background: 'transparent', 
               color: '#ef4444', 

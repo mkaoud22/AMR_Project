@@ -100,6 +100,33 @@ class RosConnection {
     stopTopic.publish(emptyMsg);
     console.log("Published stop and dock command");
   }
+
+  // Publish no-go zone polygon
+  sendNoGoZone(points) {
+    if (!this.connected || !this.ros) {
+      console.error("Cannot send no-go zone: ROS not connected");
+      return;
+    }
+
+    const nogoTopic = new ROSLIB.Topic({
+      ros: this.ros,
+      name: '/nogo_zone',
+      messageType: 'geometry_msgs/PolygonStamped'
+    });
+
+    // points is an array of {x, y}
+    const polygonMsg = new ROSLIB.Message({
+      header: {
+        frame_id: 'map'
+      },
+      polygon: {
+        points: points.map(p => ({ x: p.x, y: p.y, z: 0.0 }))
+      }
+    });
+
+    nogoTopic.publish(polygonMsg);
+    console.log("Published no-go zone:", polygonMsg);
+  }
 }
 
 // Create a singleton instance

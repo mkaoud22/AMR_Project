@@ -227,6 +227,7 @@ class CoveragePlanner(Node):
         
         # Subscribers and Publishers
         self.subscription = self.create_subscription(PolygonStamped, '/coverage_polygon', self.polygon_callback, 10)
+        self.nogo_subscription = self.create_subscription(PolygonStamped, '/nogo_zone', self.nogo_callback, 10)
         self.stop_subscription = self.create_subscription(Empty, '/stop_and_dock', self.stop_and_dock_callback, 10)
         # Use transient local (latched) QoS so the path persists and shows immediately in RViz
         self.vis_qos = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
@@ -247,13 +248,14 @@ class CoveragePlanner(Node):
         self.tf_listener = TransformListener(self.tf_buffer, self)
         
         self.clicked_points = []
+        self.nogo_points = []
         
         self.pose_publisher = self.create_publisher(PoseStamped, '/robot_pose', 10)
         self.pose_timer = self.create_timer(0.1, self.publish_robot_pose)
         
         # UPDATE: Vacuum tool width set to 480mm (0.48m)
         self.sweep_spacing = 0.48 
-
+        
         self.get_logger().info("Coverage Planner ready. Waiting for mobile app polygons.")
 
     def publish_robot_pose(self):
@@ -269,6 +271,12 @@ class CoveragePlanner(Node):
             self.pose_publisher.publish(pose_msg)
         except TransformException:
             pass
+
+    def nogo_callback(self, msg):
+        self.nogo_points = msg.polygon.points
+        self.get_logger().info(f"Received no-go zone with {len(self.nogo_points)} points.")
+        if len(self.nogo_points) >= 3:
+            self.publish_nogo_boundary()
 
     def polygon_callback(self, msg):
         self.clicked_points = msg.polygon.points
@@ -330,16 +338,76 @@ class CoveragePlanner(Node):
         # Determine initial Y direction
         going_up = (closest_corner in ['bottom_left', 'bottom_right'])
 
-        while end_condition(current_x):
-            if going_up:
-                waypoints.append((current_x, min_y))
-                waypoints.append((current_x, max_y))
+        has_nogo = False
+        nogo_min_x, nogo_max_x = 0.0, 0.0
+        nogo_min_y, nogo_max_y = 0.0, 0.0
+        margin = 0.30  # Safety buffer margin in meters
+        
+        if len(self.nogo_points) >= 3:
+            has_nogo = True
+            nogo_x = [p.x for p in self.nogo_points]
+            nogo_y = [p.y for p in self.nogo_points]
+            nogo_min_x, nogo_max_x = min(nogo_x), max(nogo_x)
+            nogo_min_y, nogo_max_y = min(nogo_y), max(nogo_y)
+            
+            # Apply safety margin to the no-go zone boundaries and clamp within coverage bounds
+            nogo_min_x_m = max(min_x, nogo_min_x - margin)
+            nogo_max_x_m = min(max_x, nogo_max_x + margin)
+            nogo_min_y_m = max(min_y, nogo_min_y - margin)
+            nogo_max_y_m = min(max_y, nogo_max_y + margin)
+            
+            # Choose the side of the no-go zone with more clearance to bypass
+            left_clearance = nogo_min_x - min_x
+            right_clearance = max_x - nogo_max_x
+            if left_clearance > right_clearance:
+                bypass_x = max(min_x, nogo_min_x - margin)
             else:
-                waypoints.append((current_x, max_y))
-                waypoints.append((current_x, min_y))
+                bypass_x = min(max_x, nogo_max_x + margin)
+
+        while end_condition(current_x):
+            intersects_nogo = False
+            if has_nogo:
+                # Column intersects if its X coordinate is within the buffered X range of the no-go zone
+                if nogo_min_x_m <= current_x <= nogo_max_x_m:
+                    intersects_nogo = True
+
+            if intersects_nogo:
+                if going_up:
+                    # Sweep lower part of column
+                    waypoints.append((current_x, min_y))
+                    waypoints.append((current_x, nogo_min_y_m))
+                    
+                    # Bypass around the no-go zone
+                    waypoints.append((bypass_x, nogo_min_y_m))
+                    waypoints.append((bypass_x, nogo_max_y_m))
+                    
+                    # Sweep upper part of column
+                    waypoints.append((current_x, nogo_max_y_m))
+                    waypoints.append((current_x, max_y))
+                else:
+                    # Sweep upper part of column
+                    waypoints.append((current_x, max_y))
+                    waypoints.append((current_x, nogo_max_y_m))
+                    
+                    # Bypass around the no-go zone
+                    waypoints.append((bypass_x, nogo_max_y_m))
+                    waypoints.append((bypass_x, nogo_min_y_m))
+                    
+                    # Sweep lower part of column
+                    waypoints.append((current_x, nogo_min_y_m))
+                    waypoints.append((current_x, min_y))
+            else:
+                # Standard full-column sweep
+                if going_up:
+                    waypoints.append((current_x, min_y))
+                    waypoints.append((current_x, max_y))
+                else:
+                    waypoints.append((current_x, max_y))
+                    waypoints.append((current_x, min_y))
             
             going_up = not going_up
             current_x += step_x
+
 
         # Create Pose messages
         poses = []
@@ -407,6 +475,53 @@ class CoveragePlanner(Node):
             marker.points.append(p)
             
         self.boundary_publisher.publish(marker)
+
+    def publish_nogo_boundary(self):
+        if not self.nogo_points:
+            return
+        x_coords = [p.x for p in self.nogo_points]
+        y_coords = [p.y for p in self.nogo_points]
+        min_x, max_x = min(x_coords), max(x_coords)
+        min_y, max_y = min(y_coords), max(y_coords)
+
+        marker = Marker()
+        marker.header.frame_id = 'map'
+        marker.header.stamp.sec = 0
+        marker.header.stamp.nanosec = 0
+        marker.ns = 'nogo_zone'
+        marker.id = 2
+        marker.type = Marker.LINE_STRIP
+        marker.action = Marker.ADD
+        
+        marker.pose.orientation.w = 1.0 
+        
+        marker.scale.x = 0.05 
+        marker.scale.y = 0.05
+        marker.scale.z = 0.05
+        
+        # Red color
+        marker.color.r = 1.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        marker.color.a = 1.0 
+        
+        corners = [
+            (min_x, min_y),
+            (max_x, min_y),
+            (max_x, max_y),
+            (min_x, max_y),
+            (min_x, min_y) 
+        ]
+        
+        for x, y in corners:
+            p = Point()
+            p.x = float(x)
+            p.y = float(y)
+            p.z = 0.05
+            marker.points.append(p)
+            
+        self.boundary_publisher.publish(marker)
+
 
     def publish_path_marker(self, waypoints):
         marker = Marker()
