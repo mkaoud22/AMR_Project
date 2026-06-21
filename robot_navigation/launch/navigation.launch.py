@@ -20,7 +20,7 @@ def generate_launch_description():
     controller_yaml = os.path.join(get_package_share_directory(package_name), 'config', 'controller.yaml')
     bt_navigator_yaml = os.path.join(get_package_share_directory(package_name), 'config', 'bt_navigator.yaml')
     recovery_yaml = os.path.join(get_package_share_directory(package_name), 'config', 'recovery.yaml')
-    ekf_yaml = os.path.join(get_package_share_directory(package_name), 'config', 'ekf_sensor_fusion.yaml')
+    # ekf_yaml = os.path.join(get_package_share_directory(package_name), 'config', 'ekf_sensor_fusion.yaml')
 
     use_rviz = LaunchConfiguration("rviz", default=True)
     
@@ -85,13 +85,13 @@ def generate_launch_description():
                                         'behavior_server',
                                         'bt_navigator']}]),
         
-        Node(
-        package='robot_localization',
-        executable='ekf_node',
-        name='ekf_filter_node',
-        output='screen',
-        parameters=[ekf_yaml, sim_time]
-        ),
+        # Node(
+        # package='robot_localization',
+        # executable='ekf_node',
+        # name='ekf_filter_node',
+        # output='screen',
+        # parameters=[ekf_yaml, sim_time]
+        # ),
 
         Node(
             package='robot_navigation',
