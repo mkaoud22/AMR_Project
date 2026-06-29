@@ -8,7 +8,7 @@
     <xacro:include filename="lidar.xacro"/>
     <xacro:include filename="imu.xacro"/>
     <xacro:include filename="gazebo_control.xacro"/>
-
+    <xacro:include filename="control.xacro"/>
 
     <link name="base_link"/>
 
