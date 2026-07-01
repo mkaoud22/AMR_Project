@@ -74,11 +74,30 @@ def generate_launch_description():
         output="screen"
     )
     
+    ldlidar_node = Node(
+        package='ldlidar_stl_ros2',
+        executable='ldlidar_stl_ros2_node',
+        name='LD06',
+        output='screen',
+        parameters=[
+            {'product_name': 'LDLiDAR_LD06'},
+            {'topic_name': 'scan'},
+            {'frame_id': 'laser_frame'},
+            {'port_name': '/dev/serial0'},
+            {'port_baudrate': 230400},
+            {'laser_scan_dir': True},
+            {'enable_angle_crop_func': False},
+            {'angle_crop_min': 135.0},
+            {'angle_crop_max': 225.0}
+        ]
+    )
+    
     return LaunchDescription([
         rsp_launch,  # Include rsp.launch.py
         TimerAction(period=3.0, actions=[controller_manager_node]),  # Delayed start of the controller manager
         delayed_diff_drive_spawner,  # Delayed start of the diff_drive spawner
         delayed_joint_broad_spawner,  # Delayed start of the joint_broad spawner
         cmd_vel_mapper, 
+        ldlidar_node,
     ])
 
