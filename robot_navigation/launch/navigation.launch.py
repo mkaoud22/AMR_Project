@@ -23,11 +23,18 @@ def generate_launch_description():
     # ekf_yaml = os.path.join(get_package_share_directory(package_name), 'config', 'ekf_sensor_fusion.yaml')
 
     use_rviz = LaunchConfiguration("rviz", default=True)
+    use_sim_time = LaunchConfiguration("use_sim_time", default='false')
     
     # Define sim time parameter to easily pass to all nodes
-    sim_time = {'use_sim_time': True}
+    sim_time = {'use_sim_time': use_sim_time}
     
+    from launch.actions import DeclareLaunchArgument
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'use_sim_time',
+            default_value='false',
+            description='Use simulation (Gazebo) clock if true'
+        ),
         Node(
             package='nav2_map_server',
             executable='map_server',
