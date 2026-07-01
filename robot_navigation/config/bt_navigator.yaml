@@ -3,7 +3,7 @@ bt_navigator:
     use_sim_time: True
     global_frame: map
     robot_base_frame: base_footprint
-    odom_topic: /odometry/filtered #/odom
+    odom_topic: /odom
     # In Humble, Groot monitoring is often handled differently or 
     # uses these new keys for Groot 2 compatibility:
     enable_groot_monitoring: True
