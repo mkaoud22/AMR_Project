@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="https://www.ros.org/wiki/xacro">
+
+
+    <!-- Caster Wheel Link-->
+    <link name="caster_wheel_link">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <sphere radius="${caster_wheel_radius}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <sphere radius="${caster_wheel_radius}"/>
+            </geometry>
+        </collision>
+
+        <xacro:inertial_sphere mass="${caster_wheel_mass}" radius="${caster_wheel_radius}">
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        </xacro:inertial_sphere>
+    </link>
+
+    <!-- Caster Wheel Joint -->
+    <joint name="caster_wheel_joint" type="fixed">
+        <origin xyz="${caster_wheel_offset_x} 0.0 ${-caster_wheel_offset_z}" rpy="0.0 0.0 0.0"/>
+        <parent link="chassis_link"/>
+        <child link="caster_wheel_link"/>
+    </joint>
+
+
+    <gazebo reference="caster_wheel_link">
+        <material>
+            Gazebo/Blue
+        </material>
+    </gazebo>
+
+    <gazebo reference="caster_wheel_link">
+        <mu1 value="0.001"/>
+        <mu2 value="0.001"/>
+    </gazebo>
+
+
+
+
+</robot>
+                
