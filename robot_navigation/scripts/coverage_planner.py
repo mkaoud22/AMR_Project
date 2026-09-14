@@ -624,10 +624,13 @@ class CoveragePlanner(Node):
         dock_pose = PoseStamped()
         dock_pose.header.frame_id = 'map'
         dock_pose.header.stamp = self.get_clock().now().to_msg()
-        dock_pose.pose.position.x = 3.355494   
-        dock_pose.pose.position.y = -0.881754  
+        dock_pose.pose.position.x = 1.437180757522583
+        dock_pose.pose.position.y = 1.3853511810302734
         dock_pose.pose.position.z = 0.0        
-        dock_pose.pose.orientation = self.yaw_to_quaternion(-0.020110) 
+        dock_pose.pose.orientation.x = 0.0
+        dock_pose.pose.orientation.y = 0.0
+        dock_pose.pose.orientation.z = 0.6456214836468976
+        dock_pose.pose.orientation.w = 0.7636575802370973
 
         goal_msg = NavigateToPose.Goal()
         goal_msg.pose = dock_pose

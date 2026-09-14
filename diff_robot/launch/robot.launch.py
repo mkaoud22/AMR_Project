@@ -92,6 +92,13 @@ def generate_launch_description():
         ]
     )
     
+    mpu6500_node = Node(
+        package='diff_robot',
+        executable='mpu6500_node.py',
+        name='mpu6500_node',
+        output='screen'
+    )
+
     return LaunchDescription([
         rsp_launch,  # Include rsp.launch.py
         TimerAction(period=3.0, actions=[controller_manager_node]),  # Delayed start of the controller manager
@@ -99,5 +106,6 @@ def generate_launch_description():
         delayed_joint_broad_spawner,  # Delayed start of the joint_broad spawner
         cmd_vel_mapper, 
         ldlidar_node,
+        mpu6500_node,
     ])
 

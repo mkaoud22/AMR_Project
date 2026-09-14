@@ -45,5 +45,10 @@ install(
   share/${PROJECT_NAME}
 )
 
+install(PROGRAMS
+  scripts/mpu6500_node.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 
 ament_package()
